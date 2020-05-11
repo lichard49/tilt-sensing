@@ -12,12 +12,69 @@
   <section class="section">
     <div class="container">
       <h1 class="title">
-        Hello World
+        Complementary Filter
       </h1>
       <p class="subtitle">
-        My first website with <strong>Bulma</strong>!
+        Tilt = Accel + Gyro
       </p>
     </div>
   </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="title is-3">Calibration</h2>
+    </div>
+
+    <div class="container">
+      <div class="columns is-mobile">
+        <div class="column">Accelerometer</div>
+        <div id="accel-x" class="column">X</div>
+        <div id="accel-y" class="column">Y</div>
+        <div id="accel-z" class="column">Z</div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="columns is-mobile">
+        <div class="column">Gyroscope</div>
+        <div id="gyro-x" class="column">X</div>
+        <div id="gyro-y" class="column">Y</div>
+        <div id="gyro-z" class="column">Z</div>
+      </div>
+    </div>
+  </section>
+
+  <script type="text/javascript">
+    var accel = null;
+    var gyro = null;
+
+    if ('Accelerometer' in window) {
+      accel = new Accelerometer();
+      accel.addEventListener('reading', e => {
+        document.getElementById('accel-x').innerHTML = accel.x.toFixed(2);
+        document.getElementById('accel-y').innerHTML = accel.y.toFixed(2);
+        document.getElementById('accel-z').innerHTML = accel.z.toFixed(2);
+      });
+      accel.start();
+    } else {
+      document.getElementById('accel-x').innerHTML = 'No accelerometer found';
+    }
+
+    if ('Gyroscope' in window) {
+      gyro = new Gyroscope();
+      gyro.addEventListener('reading', e => {
+        document.getElementById('gyro-x').innerHTML = gyro.x.toFixed(2);
+        document.getElementById('gyro-y').innerHTML = gyro.y.toFixed(2);
+        document.getElementById('gyro-z').innerHTML = gyro.z.toFixed(2);
+      });
+      gyro.start();
+    } else {
+      document.getElementById('gyro-x').innerHTML = 'No gyroscope found';
+    }
+
+    if (accel != null && gyro != null) {
+
+    }
+  </script>
   </body>
 </html>
