@@ -12,49 +12,79 @@
   <section class="section">
     <div class="container">
       <h1 class="title">
-        Complementary Filter
+        Complementary Filter Demo
       </h1>
       <p class="subtitle">
-        Tilt = Accel + Gyro
+        Accel + Gyro = Tilt
       </p>
-    </div>
-  </section>
 
-  <section class="section">
-    <div class="container">
-      <h2 class="title is-3">Calibration</h2>
-    </div>
+      <hr>
 
-    <div class="container">
-      <div class="columns is-mobile">
-        <div class="column">Accelerometer</div>
-        <div id="accel-x" class="column">X</div>
-        <div id="accel-y" class="column">Y</div>
-        <div id="accel-z" class="column">Z</div>
+      <h2 class="title is-4">Sensors</h2>
+
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th></th>
+            <th>X</th>
+            <th>Y</th>
+            <th>Z</th>
+            <th>Mag</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Accelerometer</th>
+            <td id="accel-x">X</td>
+            <td id="accel-y">Y</td>
+            <td id="accel-z">Z</td>
+            <td id="accel-mag">Mag</td>
+          </tr>
+          <tr>
+            <th>Gyroscope</th>
+            <td id="gyro-x">X</td>
+            <td id="gyro-y">Y</td>
+            <td id="gyro-z">Z</td>
+            <td id="gyro-mag">Mag</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <h2 class="title is-4">Calibration</h2>
+
+      <div class="buttons">
+        <button id="calibrate" class="button is-primary" disabled>Calibrate</button>
       </div>
-    </div>
 
-    <div class="container">
-      <div class="columns is-mobile">
-        <div class="column">Gyroscope</div>
-        <div id="gyro-x" class="column">X</div>
-        <div id="gyro-y" class="column">Y</div>
-        <div id="gyro-z" class="column">Z</div>
-      </div>
-    </div>
-
-    <div class="buttons">
-      <button id="calibrate" class="button is-primary" disabled>Calibrate</button>
-    </div>
-
-    <div class="container">
-      <div class="columns is-mobile">
-        <div class="column">Accelerometer Bias</div>
-        <div id="accel-bias-x" class="column">X</div>
-        <div id="accel-bias-y" class="column">Y</div>
-        <div id="accel-bias-z" class="column">Z</div>
-        <div id="accel-bias-mag" class="column">Mag</div>
-      </div>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr>
+            <th></th>
+            <th>X</th>
+            <th>Y</th>
+            <th>Z</th>
+            <th>Mag</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Accel. Bias</th>
+            <td id="accel-bias-x">X</td>
+            <td id="accel-bias-y">Y</td>
+            <td id="accel-bias-z">Z</td>
+            <td id="accel-bias-mag">Mag</td>
+          </tr>
+          <tr>
+            <th>Gyroscope</th>
+            <td id="gyro-bias-x">X</td>
+            <td id="gyro-bias-y">Y</td>
+            <td id="gyro-bias-z">Z</td>
+            <td id="gyro-bias-mag">Mag</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
