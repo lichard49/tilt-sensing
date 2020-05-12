@@ -83,6 +83,20 @@
             <td id="gyro-bias-z">Z</td>
             <td id="gyro-bias-mag">Mag</td>
           </tr>
+          <tr>
+            <th>Accel. Noise</th>
+            <td id="accel-noise-x">X</td>
+            <td id="accel-noise-y">Y</td>
+            <td id="accel-noise-z">Z</td>
+            <td id="accel-noise-mag">Mag</td>
+          </tr>
+          <tr>
+            <th>Gyro. Noise</th>
+            <td id="gyro-noise-x">X</td>
+            <td id="gyro-noise-y">Y</td>
+            <td id="gyro-noise-z">Z</td>
+            <td id="gyro-noise-mag">Mag</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -103,13 +117,24 @@
     }
 
 
+    function rootMeanSquare(array) {
+      var rootMeanSquare = 0;
+      for (var i = array.length - 1; i >= 0; i--) {
+        rootMeanSquare += array[i] ** 2;
+      }
+      return Math.sqrt(rootMeanSquare / array.length);
+    }
+
+
     function makeSensorAxis(sensor_prefix, axis_suffix) {
       return {
         calibrate: [],
         out: document.getElementById(sensor_prefix + '-' +
           axis_suffix),
-        bias_out: document.getElementById(sensor_prefix + '-bias-' + 
-          axis_suffix)
+        bias_out: document.getElementById(sensor_prefix + '-bias-' +
+          axis_suffix),
+        noise_out: document.getElementById(sensor_prefix +
+          '-noise-' + axis_suffix)
       };
     }
 
@@ -179,6 +204,16 @@
     }
 
 
+    function showNoise(sensor_wrapper) {
+      for (var axis in sensor_wrapper.axes) {
+        // update front end
+        sensor_wrapper.axes[axis].noise_out.innerHTML =
+          rootMeanSquare(sensor_wrapper.axes[axis].calibrate)
+          .toFixed(2);
+      }
+    }
+
+
     var accel = setupSensor('Accelerometer', Accelerometer, 'accel');
     var gyro = setupSensor('Gyroscope', Gyroscope, 'gyro');
     var calibrating = false;
@@ -202,6 +237,8 @@
           // update front end with bias measures
           showBias(accel);
           showBias(gyro);
+          showNoise(accel);
+          showNoise(gyro);
         }, 5000);
       });
     }
