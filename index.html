@@ -77,7 +77,7 @@
             <td id="accel-bias-mag">Mag</td>
           </tr>
           <tr>
-            <th>Gyroscope</th>
+            <th>Gyro. Bias</th>
             <td id="gyro-bias-x">X</td>
             <td id="gyro-bias-y">Y</td>
             <td id="gyro-bias-z">Z</td>
@@ -89,16 +89,6 @@
   </section>
 
   <script type="text/javascript">
-    var accel = null;
-    var gyro = null;
-
-    var calibrating = false;
-    var accel_calibrate_x = [];
-    var accel_calibrate_y = [];
-    var accel_calibrate_z = [];
-    var accel_calibrate_mag = [];
-
-
     function average(array) {
       var average = 0;
       for (var i = array.length - 1; i >= 0; i--) {
@@ -108,56 +98,110 @@
     }
 
 
-    if ('Accelerometer' in window) {
-      accel = new Accelerometer();
-      accel.addEventListener('reading', e => {
-        accel.mag = Math.sqrt(accel.x ** 2 + accel.y ** 2 + accel.z ** 2)
+    function magnitude(x, y, z) {
+      return Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+    }
 
-        document.getElementById('accel-x').innerHTML = accel.x.toFixed(2);
-        document.getElementById('accel-y').innerHTML = accel.y.toFixed(2);
-        document.getElementById('accel-z').innerHTML = accel.z.toFixed(2);
 
-        if (calibrating) {
-          accel_calibrate_x.push(accel.x);
-          accel_calibrate_y.push(accel.y);
-          accel_calibrate_z.push(accel.z);
-          accel_calibrate_mag.push(accel.mag);
+    function makeSensorAxis(sensor_prefix, axis_suffix) {
+      return {
+        calibrate: [],
+        out: document.getElementById(sensor_prefix + '-' +
+          axis_suffix),
+        bias_out: document.getElementById(sensor_prefix + '-bias-' + 
+          axis_suffix)
+      };
+    }
+
+
+    function setupSensor(sensor_name, sensor_constructor,
+      sensor_prefix) {
+
+      var sensor = {};
+
+      if (sensor_name in window) {
+        sensor.sensor = new sensor_constructor();
+
+        sensor.axes = {
+          x: makeSensorAxis(sensor_prefix, 'x'),
+          y: makeSensorAxis(sensor_prefix, 'y'),
+          z: makeSensorAxis(sensor_prefix, 'z'),
+          mag: makeSensorAxis(sensor_prefix, 'mag')
+        };
+
+        addSensorHandler(sensor);
+        sensor.sensor.start();
+
+        return sensor;
+      } else {
+        return null;
+      }
+    }
+
+
+    function addSensorHandler(sensor_wrapper) {
+      var sensor = sensor_wrapper.sensor;
+
+      sensor.addEventListener('reading', function() {
+        // calculate magnitude of 3 axes signal        
+        sensor.mag = magnitude(sensor.x, sensor.y, sensor.z);
+
+        for (var axis in sensor_wrapper.axes) {
+          // update front end
+          sensor_wrapper.axes[axis].out.innerHTML =
+            sensor[axis].toFixed(2);
+
+          // accumulate samples when calibrating
+          if (calibrating) {
+            sensor_wrapper.axes[axis].calibrate.push(sensor[axis]);
+          }
         }
       });
-      accel.start();
-    } else {
-      document.getElementById('accel-x').innerHTML = 'No accelerometer found';
     }
 
-    if ('Gyroscope' in window) {
-      gyro = new Gyroscope();
-      gyro.addEventListener('reading', e => {
-        document.getElementById('gyro-x').innerHTML = gyro.x.toFixed(2);
-        document.getElementById('gyro-y').innerHTML = gyro.y.toFixed(2);
-        document.getElementById('gyro-z').innerHTML = gyro.z.toFixed(2);
-      });
-      gyro.start();
-    } else {
-      document.getElementById('gyro-x').innerHTML = 'No gyroscope found';
+
+    function setButton(button, disabled) {
+      button.disabled = disabled;
+      if (disabled) {
+        button.classList.add('is-loading');
+      } else {
+        button.classList.remove('is-loading');
+      }
     }
+
+
+    function showBias(sensor_wrapper) {
+      for (var axis in sensor_wrapper.axes) {
+        // update front end
+        sensor_wrapper.axes[axis].bias_out.innerHTML =
+          average(sensor_wrapper.axes[axis].calibrate).toFixed(2);
+      }
+    }
+
+
+    var accel = setupSensor('Accelerometer', Accelerometer, 'accel');
+    var gyro = setupSensor('Gyroscope', Gyroscope, 'gyro');
+    var calibrating = false;
+
 
     if (accel != null && gyro != null) {
+      // enable calibrate button
       var calibrate_button = document.getElementById('calibrate');
-      calibrate_button.disabled = false;
+      setButton(calibrate_button, false);
+
       calibrate_button.addEventListener('click', function() {
-        calibrate_button.disabled = true;
-        calibrate_button.classList.add('is-loading');
+        // disable calibrate button while recording
+        setButton(calibrate_button, true);
         calibrating = true;
 
         window.setTimeout(function() {
-          calibrate_button.disabled = false;
-          calibrate_button.classList.remove('is-loading');
+          // enable button again when done recording
+          setButton(calibrate_button, false);
           calibrating = false;
 
-          document.getElementById('accel-bias-x').innerHTML = average(accel_calibrate_x).toFixed(2);
-          document.getElementById('accel-bias-y').innerHTML = average(accel_calibrate_y).toFixed(2);
-          document.getElementById('accel-bias-z').innerHTML = average(accel_calibrate_z).toFixed(2);
-          document.getElementById('accel-bias-mag').innerHTML = average(accel_calibrate_mag).toFixed(2);
+          // update front end with bias measures
+          showBias(accel);
+          showBias(gyro);
         }, 5000);
       });
     }
