@@ -42,18 +42,57 @@
         <div id="gyro-z" class="column">Z</div>
       </div>
     </div>
+
+    <div class="buttons">
+      <button id="calibrate" class="button is-primary" disabled>Calibrate</button>
+    </div>
+
+    <div class="container">
+      <div class="columns is-mobile">
+        <div class="column">Accelerometer Bias</div>
+        <div id="accel-bias-x" class="column">X</div>
+        <div id="accel-bias-y" class="column">Y</div>
+        <div id="accel-bias-z" class="column">Z</div>
+        <div id="accel-bias-mag" class="column">Mag</div>
+      </div>
+    </div>
   </section>
 
   <script type="text/javascript">
     var accel = null;
     var gyro = null;
 
+    var calibrating = false;
+    var accel_calibrate_x = [];
+    var accel_calibrate_y = [];
+    var accel_calibrate_z = [];
+    var accel_calibrate_mag = [];
+
+
+    function average(array) {
+      var average = 0;
+      for (var i = array.length - 1; i >= 0; i--) {
+        average += array[i];
+      }
+      return average / array.length;
+    }
+
+
     if ('Accelerometer' in window) {
       accel = new Accelerometer();
       accel.addEventListener('reading', e => {
+        accel.mag = Math.sqrt(accel.x ** 2 + accel.y ** 2 + accel.z ** 2)
+
         document.getElementById('accel-x').innerHTML = accel.x.toFixed(2);
         document.getElementById('accel-y').innerHTML = accel.y.toFixed(2);
         document.getElementById('accel-z').innerHTML = accel.z.toFixed(2);
+
+        if (calibrating) {
+          accel_calibrate_x.push(accel.x);
+          accel_calibrate_y.push(accel.y);
+          accel_calibrate_z.push(accel.z);
+          accel_calibrate_mag.push(accel.mag);
+        }
       });
       accel.start();
     } else {
@@ -73,7 +112,24 @@
     }
 
     if (accel != null && gyro != null) {
+      var calibrate_button = document.getElementById('calibrate');
+      calibrate_button.disabled = false;
+      calibrate_button.addEventListener('click', function() {
+        calibrate_button.disabled = true;
+        calibrate_button.classList.add('is-loading');
+        calibrating = true;
 
+        window.setTimeout(function() {
+          calibrate_button.disabled = false;
+          calibrate_button.classList.remove('is-loading');
+          calibrating = false;
+
+          document.getElementById('accel-bias-x').innerHTML = average(accel_calibrate_x).toFixed(2);
+          document.getElementById('accel-bias-y').innerHTML = average(accel_calibrate_y).toFixed(2);
+          document.getElementById('accel-bias-z').innerHTML = average(accel_calibrate_z).toFixed(2);
+          document.getElementById('accel-bias-mag').innerHTML = average(accel_calibrate_mag).toFixed(2);
+        }, 5000);
+      });
     }
   </script>
   </body>
