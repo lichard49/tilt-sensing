@@ -214,6 +214,11 @@
               (sensor[axis] - sensor_wrapper.bias[axis]) / 9.81
             ) * (180 / Math.PI);
             tilt_line.append(new Date().getTime(), tilt);
+          } else if (sensor_wrapper.name == 'Gyroscope' &&
+            axis == 'x' && tilting && tilt_mode == 'gyro') {
+            // integrate x axis
+            gyro.tilt[axis] += sensor[axis];
+            tilt_line.append(new Date().getTime(), gyro.tilt[axis]);
           }
         }
       });
@@ -293,6 +298,12 @@
           showBias(gyro);
           showNoise(accel);
           showNoise(gyro);
+
+          gyro.tilt = {};
+          for (var axis in gyro.axes) {
+            gyro.tilt[axis] = gyro.axes[axis].calibrate
+              .reduce((a, b) => a + b, 0);
+          }
         }, 5000);
       });
     }
