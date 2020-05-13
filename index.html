@@ -170,7 +170,7 @@
 
       if (sensor_name in window) {
         sensor.name = sensor_name;
-        sensor.sensor = new sensor_constructor();
+        sensor.sensor = new sensor_constructor({frequency: 60});
 
         sensor.axes = {
           x: makeSensorAxis(sensor_prefix, 'x'),
@@ -221,7 +221,7 @@
               gyro.last_time = new Date().getTime();
             } else {
               var current_time = new Date().getTime();
-              var delta_time = (current_time - gyro.last_time)/1000;
+              var delta_time = (current_time - gyro.last_time)/10;
               gyro.tilt[axis] += sensor[axis] * delta_time;
               tilt_line.append(current_time, gyro.tilt[axis]);
               gyro.last_time = current_time;
@@ -233,11 +233,12 @@
               gyro.last_time = new Date().getTime();
             } else {
               var current_time = new Date().getTime();
-              var delta_time = (current_time - gyro.last_time)/1000;
+              var delta_time = (current_time - gyro.last_time)/10;
               var alpha = 0.9;
               var accel_tilt = Math.asin(
-                (sensor[axis] - sensor_wrapper.bias[axis]) / 9.81
+                (accel.sensor['y'] - accel.bias['y']) / 9.81
               ) * (180 / Math.PI);
+              console.log(accel_tilt);
               gyro.tilt[axis] = alpha * (gyro.tilt[axis] + sensor[axis] * delta_time) + (1 - alpha) * (accel_tilt);
               tilt_line.append(current_time, gyro.tilt[axis]);
               gyro.last_time = current_time;
