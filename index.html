@@ -6,6 +6,7 @@
     <title>Hello Bulma!</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script type="text/javascript" src="js/smoothie.js"></script>
   </head>
 
   <body>
@@ -99,6 +100,27 @@
           </tr>
         </tbody>
       </table>
+
+      <hr>
+
+      <h2 class="title is-4">Tilt</h2>
+
+      <div class="control">
+        <label class="radio">
+          <input type="radio" name="tilt-sensor" checked>
+          Accel. only
+        </label>
+        <label class="radio">
+          <input type="radio" name="tilt-sensor">
+          Gyro. only
+        </label>
+        <label class="radio">
+          <input type="radio" name="tilt-sensor">
+          Accel. + Gyro.
+        </label>
+      </div>
+
+      <canvas id="tilt-chart" style="width:100%; height:1000px;" width="360" height="300"></canvas>
     </div>
   </section>
 
@@ -140,7 +162,7 @@
 
 
     function setupSensor(sensor_name, sensor_constructor,
-      sensor_prefix) {
+      sensor_prefix, line_color) {
 
       var sensor = {};
 
@@ -152,6 +174,12 @@
           y: makeSensorAxis(sensor_prefix, 'y'),
           z: makeSensorAxis(sensor_prefix, 'z'),
           mag: makeSensorAxis(sensor_prefix, 'mag')
+        };
+
+        sensor.line = new TimeSeries();
+        sensor.line_style = {
+          strokeStyle: line_color,
+          lineWidth: 3
         };
 
         addSensorHandler(sensor);
@@ -179,6 +207,11 @@
           // accumulate samples when calibrating
           if (calibrating) {
             sensor_wrapper.axes[axis].calibrate.push(sensor[axis]);
+          }
+
+          // plot signals when calibrated
+          if (axis == 'y' && tilting) {
+            sensor_wrapper.line.append(new Date().getTime(), sensor[axis]);
           }
         }
       });
@@ -214,9 +247,20 @@
     }
 
 
-    var accel = setupSensor('Accelerometer', Accelerometer, 'accel');
-    var gyro = setupSensor('Gyroscope', Gyroscope, 'gyro');
+    var accel = setupSensor(
+      'Accelerometer',
+      Accelerometer,
+      'accel',
+      'rgb(0, 255, 0)'
+    );
+    var gyro = setupSensor(
+      'Gyroscope',
+      Gyroscope,
+      'gyro',
+      'rgb(255, 0, 255)'
+    );
     var calibrating = false;
+    var tilting = false;
 
 
     if (accel != null && gyro != null) {
@@ -233,6 +277,7 @@
           // enable button again when done recording
           setButton(calibrate_button, false);
           calibrating = false;
+          tilting = true;
 
           // update front end with bias measures
           showBias(accel);
@@ -242,6 +287,14 @@
         }, 5000);
       });
     }
+
+
+    var smoothie = new SmoothieChart();
+    smoothie.streamTo(document.getElementById('tilt-chart'));
+
+    // Add to SmoothieChart
+    smoothie.addTimeSeries(accel.line, accel.line_style);
+    smoothie.addTimeSeries(gyro.line, gyro.line_style);
   </script>
   </body>
 </html>
