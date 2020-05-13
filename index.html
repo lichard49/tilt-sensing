@@ -217,8 +217,15 @@
           } else if (sensor_wrapper.name == 'Gyroscope' &&
             axis == 'x' && tilting && tilt_mode == 'gyro') {
             // integrate x axis
-            gyro.tilt[axis] += sensor[axis];
-            tilt_line.append(new Date().getTime(), gyro.tilt[axis]);
+            if (gyro.last_time == -1) {
+              gyro.last_time = new Date().getTime();
+            } else {
+              var current_time = new Date().getTime();
+              var delta_time = current_time - gyro.last_time;
+              gyro.tilt[axis] += sensor[axis] * delta_time;
+              tilt_line.append(current_time, gyro.tilt[axis]);
+              gyro.last_time = current_time;
+            }
           }
         }
       });
@@ -300,9 +307,9 @@
           showNoise(gyro);
 
           gyro.tilt = {};
+          gyro.last_time = -1;
           for (var axis in gyro.axes) {
-            gyro.tilt[axis] = gyro.axes[axis].calibrate
-              .reduce((a, b) => a + b, 0);
+            gyro.tilt[axis] = 0;
           }
         }, 5000);
       });
